@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hangman Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .word {
+            font-size: 2.5em;
+            margin: 30px;
+            letter-spacing: 15px;
+            font-family: monospace;
+        }
+        .meaning {
+            font-size: 1.2em;
+            margin: 20px;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            color: #333;
+        }
+        .hint-label {
+            font-weight: bold;
+            color: #666;
+        }
+        .input-section {
+            margin: 20px;
+        }
+        .message {
+            font-weight: bold;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success { color: green; background: #e8f5e9; }
+        .error { color: red; background: #ffebee; }
+        .guessed-letters {
+            margin: 20px;
+            font-size: 1.2em;
+        }
+        input[type="text"] {
+            font-size: 1.2em;
+            width: 30px;
+            text-align: center;
+            margin: 0 10px;
+        }
+        button {
+            font-size: 1em;
+            padding: 8px 16px;
+            margin: 5px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .attempts {
+            font-size: 1.2em;
+            color: {% if attempts_left <= 2 %}red{% else %}black{% endif %};
+        }
+    </style>
+</head>
+<body>
+    <h1>Hangman Game</h1>
+    
+    {% if messages %}
+        {% for message in messages %}
+            <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+    
+    <p class="word">{{ display_word }}</p>
+    
+    <div class="meaning">
+        <span class="hint-label">Hint:</span> {{ meaning }}
+    </div>
+    
+    <p class="guessed-letters" id="guess">
+        Guessed Letters: {% if guessed_letters %}{{ guessed_letters|join:" " }}{% else %}None{% endif %}
+    </p>
+    
+    <p class="attempts">Attempts Left: {{ attempts_left }}</p>
+
+    {% if not game_over and not game_won %}
+        <form method="POST" action="{% url 'hangman:guess_letter' %}" class="input-section">
+            {% csrf_token %}
+            <label for="letter">Enter a letter:</label>
+            <input type="text" name="letter" id="letter" maxlength="1" 
+                   pattern="[A-Za-z]" title="Please enter a single letter"
+                   required autocomplete="off" autofocus>
+            <button type="submit">Guess</button>
+        </form>
+    {% else %}
+        <div class="message {% if game_won %}success{% else %}error{% endif %}">
+            {% if game_won %}
+                🎉 Congratulations! You won! 🎉
+            {% else %}
+                😢 Game Over! The word was: {{ word }}
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <form action="{% url 'hangman:reset_game' %}" method="POST">
+        {% csrf_token %}
+        <button type="submit">Start New Game</button>
+    </form>
+</body>
+</html>
