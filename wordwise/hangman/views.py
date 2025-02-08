@@ -71,7 +71,7 @@ def guess_letter(request):
     
     letter = request.POST.get('letter', '').upper()
     
-    if letter and letter.isalpha() and len(letter) == 1:
+    if letter and letter.isalpha() and len(letter) == 1 and letter.isascii():
         guessed_letters = request.session.get('guessed_letters', [])
         
         if letter not in guessed_letters:

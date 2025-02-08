@@ -98,7 +98,7 @@
             {% csrf_token %}
             <label for="letter">Enter a letter:</label>
             <input type="text" name="letter" id="letter" maxlength="1" 
-                   pattern="[A-Za-z]" title="Please enter a single letter"
+                   pattern="[A-Za-z]" title="Please enter a valid single English letter (A-Z)!""
                    required autocomplete="off" autofocus>
             <button type="submit">Guess</button>
         </form>
@@ -111,10 +111,11 @@
             {% endif %}
         </div>
     {% endif %}
+    <button class ="back_to_menu " onclick="window.location.href='/'">Back to menu</button>
 
     <form action="{% url 'hangman:reset_game' %}" method="POST">
         {% csrf_token %}
-        <button type="submit">Start New Game</button>
+        <button id = restart type="submit">Start New Game</button>
     </form>
 </body>
 </html>
