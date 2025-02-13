@@ -5,72 +5,220 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hangman Game</title>
     <style>
+        :root {
+            --primary-color: #6366f1;
+            --secondary-color: #4f46e5;
+            --background-color: #f8fafc;
+            --text-color: #334155;
+            --error-color: #ef4444;
+            --success-color: #22c55e;
+        }
+
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', system-ui, sans-serif;
             text-align: center;
-            max-width: 800px;
+            max-width: 1000px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 40px 20px;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.5;
         }
-        .word {
+
+        h1 {
             font-size: 2.5em;
-            margin: 30px;
-            letter-spacing: 15px;
-            font-family: monospace;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 800;
         }
+
+        .word {
+            font-size: 3em;
+            margin: 40px 0;
+            letter-spacing: 20px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+
         .meaning {
             font-size: 1.2em;
-            margin: 20px;
-            padding: 15px;
-            background-color: #f5f5f5;
-            border-radius: 8px;
-            color: #333;
+            margin: 30px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
         }
+
         .hint-label {
             font-weight: bold;
-            color: #666;
+            color: var(--primary-color);
+            text-transform: uppercase;
+            font-size: 0.9em;
+            letter-spacing: 1px;
         }
+
         .input-section {
-            margin: 20px;
+            margin: 30px 0;
         }
+
         .message {
-            font-weight: bold;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
+            font-weight: 600;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            animation: fadeIn 0.5s ease-in;
         }
-        .success { color: green; background: #e8f5e9; }
-        .error { color: red; background: #ffebee; }
+
+        .success { 
+            color: var(--success-color);
+            background: #dcfce7;
+        }
+
+        .error { 
+            color: var(--error-color);
+            background: #fee2e2;
+        }
+
         .guessed-letters {
-            margin: 20px;
-            font-size: 1.2em;
+            margin: 25px 0;
+            font-size: 1.3em;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            display: inline-block;
         }
+
         input[type="text"] {
-            font-size: 1.2em;
-            width: 30px;
+            font-size: 1.4em;
+            width: 40px;
+            height: 40px;
             text-align: center;
             margin: 0 10px;
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            outline: none;
+            transition: all 0.3s ease;
         }
+
+        input[type="text"]:focus {
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+        }
+
         button {
-            font-size: 1em;
-            padding: 8px 16px;
-            margin: 5px;
+            font-size: 1.1em;
+            padding: 12px 24px;
+            margin: 8px;
             cursor: pointer;
-            background-color: #4CAF50;
+            background-color: var(--primary-color);
             color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
+
         button:hover {
-            background-color: #45a049;
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
+
         .attempts {
-            font-size: 1.2em;
-            color: {% if attempts_left <= 2 %}red{% else %}black{% endif %};
+            font-size: 1.3em;
+            font-weight: 600;
+            color: {% if attempts_left <= 2 %}var(--error-color){% else %}var(--text-color){% endif %};
+            margin: 20px 0;
         }
-    </style>
+
+        .guessed-letter-wrong {
+            color: var(--error-color);
+            font-weight: bold;
+        }
+
+        .back_to_menu {
+            background-color: #64748b;
+        }
+
+        #restart {
+            background-color: var(--success-color);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Container for game controls */
+        .game-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        .user-box {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            background: white; /* Gradient สีฟ้า-ม่วง */
+            padding: 12px 20px;
+            font-weight: bold;
+            display: flex;
+            font-size: 18px;
+            align-items: center;
+            gap: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        
+        /* ทำให้ไอคอนขนาดพอดี */
+        .user-box img {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+        }
+
+        /* Responsive design */
+        @media (max-width: 800px) {
+            body {
+                padding: 20px 10px;
+            }
+
+            .word {
+                font-size: 2em;
+                letter-spacing: 15px;
+            }
+
+            .game-controls {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            button {
+                width: 100%;
+                max-width: 300px;
+            }
+            
+        }
+        </style>
+    <script>
+        async function fetchUserInfo() {
+            const response = await fetch("/user/info/");
+            // Handle response
+        }
+        fetchUserInfo();
+        </script>
 </head>
 <body>
+    <div class="user-box">
+        👤 {{ user.username }}
+    </div>
     <h1>Hangman Game</h1>
     
     {% if messages %}
@@ -88,7 +236,18 @@
     </div>
     
     <p class="guessed-letters" id="guess">
-        Guessed Letters: {% if guessed_letters %}{{ guessed_letters|join:" " }}{% else %}None{% endif %}
+        Guessed Letters: 
+        {% if guessed_letters %}
+            {% for letter in guessed_letters %}
+                {% if letter in incorrect_letters %}
+                    <span class="guessed-letter-wrong">{{ letter }}</span>
+                {% else %}
+                    {{ letter }}
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            None
+        {% endif %}
     </p>
     
     <p class="attempts">Attempts Left: {{ attempts_left }}</p>
@@ -98,7 +257,7 @@
             {% csrf_token %}
             <label for="letter">Enter a letter:</label>
             <input type="text" name="letter" id="letter" maxlength="1" 
-                   pattern="[A-Za-z]" title="Please enter a valid single English letter (A-Z)!""
+                   pattern="[A-Za-z]" title="Please enter a valid single English letter (A-Z)!"
                    required autocomplete="off" autofocus>
             <button type="submit">Guess</button>
         </form>
@@ -111,11 +270,13 @@
             {% endif %}
         </div>
     {% endif %}
-    <button class ="back_to_menu " onclick="window.location.href='/'">Back to menu</button>
 
-    <form action="{% url 'hangman:reset_game' %}" method="POST">
-        {% csrf_token %}
-        <button id = restart type="submit">Start New Game</button>
-    </form>
+    <div class="game-controls">
+        <button class="back_to_menu" onclick="window.location.href='/'">Back to Menu</button>
+        <form action="{% url 'hangman:reset_game' %}" method="POST" style="display: inline;">
+            {% csrf_token %}
+            <button id="restart" type="submit">Start New Game</button>
+        </form>
+    </div>
 </body>
 </html>

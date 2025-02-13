@@ -34,20 +34,21 @@ def initialize_session(request):
 
 @require_http_methods(["GET"])
 def hangman_game(request):
-    # Initialize game if needed
     if 'word' not in request.session:
         initialize_session(request)
     
-    # ดึงข้อมูลจาก session มาเก็บ โดยถ้าไม่มีข้อมูลจะใช้ค่าเริ่มต้นด้านขวา
     word = request.session.get('word', '')
     meaning = request.session.get('meaning', '')
     guessed_letters = request.session.get('guessed_letters', [])
     attempts_left = request.session.get('attempts_left', 6)
     
+    # แยกตัวอักษรที่ถูกต้องและผิดออกจากกัน
+    correct_letters = [letter for letter in guessed_letters if letter in word]
+    incorrect_letters = [letter for letter in guessed_letters if letter not in word]
+    
     # Create display word with guessed letters
     display_word = ''.join([letter if letter in guessed_letters else '_' for letter in word])
     
-    # Check game state
     game_won = '_' not in display_word
     game_over = attempts_left <= 0
     
@@ -55,6 +56,7 @@ def hangman_game(request):
         'display_word': ' '.join(display_word),  # Add spaces between letters
         'meaning': meaning,  # Add meaning to context
         'guessed_letters': sorted(guessed_letters),
+        'incorrect_letters': incorrect_letters,  # ส่งข้อมูลตัวอักษรที่ผิด
         'attempts_left': attempts_left,
         'game_won': game_won,
         'game_over': game_over,
@@ -62,6 +64,7 @@ def hangman_game(request):
     }
     
     return render(request, 'hangman/game.html', context)
+
 
 @require_http_methods(["POST"])
 def guess_letter(request):
