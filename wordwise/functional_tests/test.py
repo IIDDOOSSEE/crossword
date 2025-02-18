@@ -60,7 +60,7 @@ class HangmanGameTest(StaticLiveServerTestCase):
         attempts_left = self.driver.find_element(By.CSS_SELECTOR, ".attempts").text
         incorrect_letter_element = self.driver.find_element(By.XPATH, "//*[text()='A']")
         color = incorrect_letter_element.value_of_css_property('color')
-        # self.assertEqual(color, 'rgba(255, 0, 0, 1)')  # rgba(255, 0, 0, 1) คือสีแดง
+        self.assertEqual(color, 'rgba(239, 68, 68, 1)')  
         self.assertEqual("Guessed Letters: A", guessed_letters)
         self.assertEqual("Attempts Left: 5", attempts_left)
 

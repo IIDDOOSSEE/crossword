@@ -208,11 +208,68 @@
         }
         </style>
     <script>
-        async function fetchUserInfo() {
-            const response = await fetch("/user/info/");
-            // Handle response
+        document.addEventListener("DOMContentLoaded", async function () {
+    let gameOver = document.querySelector(".message.success") || document.querySelector(".message.error");
+
+    if (gameOver) {
+        // ดึงค่าจำนวนตัวอักษรที่เดาผิด
+        let wrongGuesses = document.querySelectorAll(".guessed-letter-wrong").length;
+
+        // ดึงคำศัพท์ที่เล่น
+        let wordElement = document.querySelector("#answer-word");
+        let word = wordElement ? wordElement.textContent.trim() : "";
+        console.log("word:", word); 
+
+        // ดึงชื่อผู้ใช้จาก API
+        let username = "";
+        try {
+            let response = await fetch("/user/info/");
+            let data = await response.json();
+            username = data.username;
+        } catch (error) {
+            console.error("Error fetching user info:", error);
         }
-        fetchUserInfo();
+
+        // ส่งข้อมูลไปยัง Django
+        if (username && word) {
+            fetch("save-fail-count/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCSRFToken() // ดึง CSRF token
+                },
+                body: JSON.stringify({
+                    username: username,
+                    word: word,
+                    fails: wrongGuesses
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Save success:", data);
+            })
+            .catch(error => {
+                console.error("Error saving data:", error);
+            });
+        }
+        console.log("finished");
+    }
+});
+
+// ฟังก์ชันดึง CSRF Token จาก cookie
+function getCSRFToken() {
+    let name = "csrftoken=";
+    let decodedCookie = decodeURIComponent(document.cookie);
+    let cookies = decodedCookie.split(";");
+    for (let i = 0; i < cookies.length; i++) {
+        let c = cookies[i].trim();
+        if (c.indexOf(name) === 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return "";
+}
+
         </script>
 </head>
 <body>
@@ -230,11 +287,11 @@
     {% endif %}
     
     <p class="word">{{ display_word }}</p>
+    <span id="answer-word" style="display: none;">{{ word }}</span>
     
     <div class="meaning">
         <span class="hint-label">Hint:</span> {{ meaning }}
     </div>
-    
     <p class="guessed-letters" id="guess">
         Guessed Letters: 
         {% if guessed_letters %}

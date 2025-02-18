@@ -1,8 +1,13 @@
 # views.py
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.views.decorators.http import require_http_methods
 from wordbank.models import wordBank
+from user.models import Account
+from hangman.models import fail_count
+import json
+
 
 import random
 def index(request):
@@ -60,7 +65,7 @@ def hangman_game(request):
         'attempts_left': attempts_left,
         'game_won': game_won,
         'game_over': game_over,
-        'word': word if game_over else None
+        'word': word 
     }
     
     return render(request, 'hangman/game.html', context)
@@ -97,3 +102,30 @@ def reset_game(request):
     initialize_session(request)
     messages.info(request, 'New game started!')
     return redirect('hangman:hangman_game')
+
+def save_fail_count(request):
+    if request.method == 'POST':
+        # รับข้อมูลจาก body request
+        data = json.loads(request.body)
+        username = data.get('username')
+        word = ''.join(data.get('word').split(" ")).lower()
+        print(word)
+        fails = data.get('fails')
+        
+        try:
+            user = Account.objects.get(username=username)
+            word_obj = wordBank.objects.get(word=word)
+            
+            # เก็บข้อมูลในตาราง fail_count
+            fail_entry, created = fail_count.objects.update_or_create(
+                username=user,
+                word=word_obj,
+                defaults={'fails': fails}
+            )
+            
+            return JsonResponse({'status': 'success', 'message': 'Data saved successfully.'})
+        except Account.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Account not found.'}, status=404)
+        except wordBank.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Word not found.'}, status=404)
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=400)
